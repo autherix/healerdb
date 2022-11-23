@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 
-	"gomongo/conndb"
-	"gomongo/gomongo"
+	"healerdb/conndb"
 )
 
 func main() {
 	fmt.Println("Hello World")
-	gomongo.Usefmt()
 	conndb.Connect()
 }

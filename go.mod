@@ -1,4 +1,4 @@
-module gomongo
+module healerdb
 
 go 1.19
 
