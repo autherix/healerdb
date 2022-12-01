@@ -53,14 +53,6 @@ func main() {
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
 
-	// Add a Target to the database
-	targetName := "uber"
-	err = dbq.AddTargetToDB(session, targetName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Target:", targetName, "added to the database")
-
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
 	fmt.Println("Done")

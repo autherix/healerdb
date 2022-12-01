@@ -7,6 +7,38 @@ healerdb:
     dbs: 
         - name: "enum"
           target_based: true
+          doc_tree:
+              - name: "db"
+              - name: "target_name"
+              - name: "target_handle"
+              - name: "target_type"
+              - name: "bb_platform"
+              - name: "link_to_bb"
+              - name: "domains"
+                tree:
+                  - name: "domain"
+                  - name: "subdomains"
+                    tree:
+                        - name: "subdomain"
+                        - name: "directories"
+                          tree:
+                              - name: "directory"
+                              - name: "subdirectories"
+                                tree:
+                                    - name: "subdirectory"
+                                    - name: "subdirectories"
+                                    - name: "files"
+                                    - name: "parameters"
+                              - name: "files"
+                              - name: "parameters"
+              - name: "scopes_info"
+                tree:
+                    - name: "scopes"
+                    - name: "scope_type"
+                    - name: "scope_identifier"
+                    - name: "scope_eligible_for_submissions"
+                    - name: "scope_eligible_for_bounty"
+
         - name: "vuln"
           target_based: true
         - name: "watch"
