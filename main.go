@@ -34,6 +34,16 @@ func main() {
 	// Defer to close the session to the database
 	defer session.Close()
 
+	// Drop all the databases
+	// err = dbq.DropAllDatabases(session)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println("All the databases dropped")
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
+
 	// Run DBFirstSetup function to create the necessary databases and collections
 	err = dbq.DBFirstSetup(session)
 	if err != nil {
@@ -42,6 +52,14 @@ func main() {
 	fmt.Println("Database setup complete")
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
+
+	// Add a Target to the database
+	targetName := "uber"
+	err = dbq.AddTargetToDB(session, targetName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Target:", targetName, "added to the database")
 
 	// print a seperator
 	fmt.Println("--------------------------------------------------")

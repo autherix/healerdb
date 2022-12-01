@@ -45,17 +45,29 @@ healerdb:
         password:
     dbs:
         - name: "enum"
+          target_based: true
         - name: "vuln"
+          target_based: true
         - name: "watch"
+          target_based: true
         - name: "notifio"
+          target_based: false
         - name: "report"
+          target_based: true
         - name: "schedule"
+          target_based: true
         - name: "ca"
+          target_based: true
         - name: "web"
+          target_based: false
         - name: "creds"
+          target_based: false
         - name: "modules_api"
+          target_based: false
         - name: "worker"
+          target_based: false
         - name: "log"
+          target_based: true
 
 Now we should define a Config type based on the above config file
 */
@@ -68,7 +80,8 @@ type Config struct {
 			Password string `yaml:"password"`
 		} `yaml:"conncreds"`
 		Dbs []struct {
-			Name string `yaml:"name"`
+			Name        string `yaml:"name"`
+			TargetBased bool   `yaml:"target_based"`
 		} `yaml:"dbs"`
 	} `yaml:"healerdb"`
 }
@@ -101,15 +114,32 @@ func GetConnCreds() (string, string, error) {
 	return config.HealerDB.Conncreds.Username, config.HealerDB.Conncreds.Password, nil
 }
 
-// Function GetDbs to read the database names from the config file
-func GetDatabases() ([]string, error) {
+// Function GetAllDatabases : to Read all the databases from the config file and return a slice of struct of them
+func GetDatabases() ([]struct {
+	Name        string `yaml:"name"`
+	TargetBased bool   `yaml:"target_based"`
+}, error) {
 	config, err := ReadConfig()
 	if err != nil {
 		return nil, err
 	}
-	var dbs []string
-	for _, db := range config.HealerDB.Dbs {
-		dbs = append(dbs, db.Name)
+	var dbs []struct {
+		Name        string `yaml:"name"`
+		TargetBased bool   `yaml:"target_based"`
 	}
+	dbs = append(dbs, config.HealerDB.Dbs...)
 	return dbs, nil
+}
+
+// Function GetDbs to read the database names from the config file
+func GetDatabasesNames() ([]string, error) {
+	dbs_names := []string{}
+	dbs, err := GetDatabases()
+	if err != nil {
+		return nil, err
+	}
+	for _, db := range dbs {
+		dbs_names = append(dbs_names, db.Name)
+	}
+	return dbs_names, nil
 }

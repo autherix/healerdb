@@ -1,10 +1,14 @@
 package dbq
 
 import (
+	"fmt"
+
 	"gopkg.in/mgo.v2"
+	// log.warningf is used to print the warning messages
 
 	// local config package
 	"healerdb/config"
+	"healerdb/myutils"
 )
 
 // Function Connect: to connect to the database with the given connection url (e.g. mongodb://localhost:27017), return the session and error if any occurs
@@ -28,6 +32,20 @@ func Connect(connstr string) (*mgo.Session, error) {
 	return session, err
 }
 
+// Function CheckDatabaseExists to check if a database exists or not, return true if exists and false if not exists
+func CheckDatabaseExists(session *mgo.Session, database string) bool {
+	databases, err := GetDatabases(session)
+	if err != nil {
+		return false
+	}
+	for _, db := range databases {
+		if db == database {
+			return true
+		}
+	}
+	return false
+}
+
 // Function to add a new database, and create a new collection in the database called "exists", and create a document in the collection called "exists" with the value "true", return error if any error occurs
 func AddDatabase(session *mgo.Session, database string) error {
 	err := session.DB(database).C("exists").Insert(map[string]bool{"exists": true})
@@ -38,6 +56,23 @@ func AddDatabase(session *mgo.Session, database string) error {
 func DropDatabase(session *mgo.Session, database string) error {
 	err := session.DB(database).DropDatabase()
 	return err
+}
+
+// Function to drop all databases except the default databases (admin, local, config), return error if any error occurs
+func DropAllDatabases(session *mgo.Session) error {
+	databases, err := GetDatabases(session)
+	if err != nil {
+		return err
+	}
+	for _, database := range databases {
+		if database != "admin" && database != "local" && database != "config" {
+			err = DropDatabase(session, database)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Function to create a new collection in a database, return error if any error occurs
@@ -153,15 +188,85 @@ Layer 7: Parameters -> Each represents a target's parameters (e.g. "/admin/login
 // Function DBFirstSetup to setup the first layer of the database (databases creation), Read the databases' names from the config file,->healerdb->dbs (is a list, select the 'name' field from the list), return error if any error occurs, Remove any other test or useless databases
 func DBFirstSetup(session *mgo.Session) error {
 	// Get the databases' names from the config file
-	databases, err := config.GetDatabases()
+	databases, err := config.GetDatabasesNames()
 	if err != nil {
 		return err
 	}
 	// Create the databases
 	for _, database := range databases {
-		err = AddDatabase(session, database)
-		if err != nil {
-			return err
+		// First check if the database exists
+		exists := CheckDatabaseExists(session, database)
+		if exists {
+			fmt.Println("[INFO] Database already exists:\t'" + database + "'")
+		} else {
+			// Create the database
+			fmt.Println("[+] Creating database:\t\t'" + database + "'")
+			err = AddDatabase(session, database)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// Function AddTargetToDB to add a target(as collection) to the database enum if it's not already there, return error if any error occurs
+func AddTargetToDB(session *mgo.Session, target string) error {
+	// Iterate over the databases in the config
+	databases, err := config.GetDatabases()
+	if err != nil {
+		return err
+	}
+	for _, database := range databases {
+		// If database.TargetBased is true, then
+		if database.TargetBased {
+			// First check if the target is already in the database
+			collections, err := GetCollections(session, database.Name)
+			if err != nil {
+				return err
+			}
+			// If the target is not in the database, then add it
+			if !myutils.ContainsString(collections, target) {
+				// Add the target to the database
+				err = AddCollection(session, database.Name, target)
+				if err != nil {
+					return err
+				}
+				fmt.Println("[+] Added target to database:\t'" + target + "'")
+			} else {
+				fmt.Println("[INFO] Target already exists in database:\t'" + target + "'")
+			}
+		}
+	}
+	return nil
+}
+
+// Remove target from the database
+func RemoveTargetFromDB(session *mgo.Session, target string) error {
+	// Iterate over the databases in the config
+	databases, err := config.GetDatabases()
+	if err != nil {
+		return err
+	}
+	for _, database := range databases {
+		// If database.TargetBased is true, then
+		if database.TargetBased {
+			// First check if the target is already in the database
+			collections, err := GetCollections(session, database.Name)
+			if err != nil {
+				return err
+			}
+			// If the target is in the database, then remove it
+			if myutils.ContainsString(collections, target) {
+				// Remove the target from the database
+				err = DropCollection(session, database.Name, target)
+				if err != nil {
+					return err
+				}
+				fmt.Println("[+] Removed target:\t'" + target + "' from database:\t'" + database.Name + "'")
+			} else {
+				fmt.Println("[INFO] Target:\t'" + target + "' does not exist in database:\t'" + database.Name + "'")
+			}
 		}
 	}
 	return nil

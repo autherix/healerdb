@@ -6,14 +6,26 @@ healerdb:
         password:
     dbs: 
         - name: "enum"
+          target_based: true
         - name: "vuln"
+          target_based: true
         - name: "watch"
+          target_based: true
         - name: "notifio"
+          target_based: false
         - name: "report"
+          target_based: true
         - name: "schedule"
+          target_based: true
         - name: "ca" 
+          target_based: true
         - name: "web"
+          target_based: false
         - name: "creds"
+          target_based: false
         - name: "modules_api"
+          target_based: false
         - name: "worker"
+          target_based: false
         - name: "log"
+          target_based: true
