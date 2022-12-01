@@ -1,0 +1,19 @@
+--- # This is a sample configuration file for the HealerDB service.
+healerdb:
+    connstr: "mongodb://localhost:27017"
+    conncreds: 
+        username:
+        password:
+    dbs: 
+        - name: "enum"
+        - name: "vuln"
+        - name: "watch"
+        - name: "notifio"
+        - name: "report"
+        - name: "schedule"
+        - name: "ca" 
+        - name: "web"
+        - name: "creds"
+        - name: "modules_api"
+        - name: "worker"
+        - name: "log"
