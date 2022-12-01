@@ -81,6 +81,20 @@ func AddCollection(session *mgo.Session, database string, collection string) err
 	return err
 }
 
+// Function to check if a collection exists in a database or not, return true if exists and false if not exists
+func CheckCollectionExists(session *mgo.Session, database string, collection string) bool {
+	collections, err := GetCollections(session, database)
+	if err != nil {
+		return false
+	}
+	for _, col := range collections {
+		if col == collection {
+			return true
+		}
+	}
+	return false
+}
+
 // Function to drop a collection in a database, return error if any error occurs
 func DropCollection(session *mgo.Session, database string, collection string) error {
 	err := session.DB(database).C(collection).DropCollection()

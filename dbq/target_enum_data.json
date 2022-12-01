@@ -1,0 +1,133 @@
+{
+    "db": "enum",
+	"domain": "example.com",
+	"subdomains": [
+		{
+			"subdomain": "www.example.com",
+			"directories": [
+				{
+					"directory": "/admin",
+					"subdirectories": [
+						{
+							"subdirectory": "/admin/login",
+							"subdirectories": [
+								{
+									"subdirectory": "/admin/control/",
+									"files": [
+										{
+											"file": "/admin/control/index.php",
+											"parameters": [
+												{
+													"parameter": "/admin/control/index.php?username=admin&password=admin"
+												}
+											]
+										}
+									]
+								}
+                            ],
+							"parameters": [
+								{
+									"parameter": "/admin/login?username=admin&password=admin"
+								}
+							]
+						}
+					]
+				},
+                {
+                    "directory": "/dashboard",
+                    "subdirectories": [
+                        {
+                            "subdirectory": "/dashboard/settings",
+                            "subdirectories": [
+                                {
+                                    "subdirectory": "/dashboard/settings/general",
+                                    "files": [
+                                        {
+                                            "file": "/dashboard/settings/general/index.php",
+                                            "parameters": [
+                                                {
+                                                    "parameter": "/dashboard/settings/general/index.php?username=admin&password=admin"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "subdirectory": "/dashboard/settings/advanced",
+                                    "files": [
+                                        {
+                                            "file": "/dashboard/settings/advanced/index.php",
+                                            "parameters": [
+                                                {
+                                                    "parameter": "/dashboard/settings/advanced/index.php?username=admin&password=admin"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "files": [
+                                {
+                                    "file": "/dashboard/settings/index.php",
+                                    "parameters": [
+                                        {
+                                            "parameter": "/dashboard/settings/index.php?username=admin&password=admin"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "parameters": [
+                                {
+                                    "parameter": "/dashboard/settings?theme=dark&onload=alert('XSS')"
+                                }
+                            ]
+                        }
+                    ],
+                    "files": [
+                        {
+                            "file": "/dashboard/index.php",
+                            "parameters": [
+                                {
+                                    "parameter": "/dashboard/index.php?username=admin&password=admin"
+                                }
+                            ]
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "parameter": "/dashboard?username=admin&password=admin"
+                        }
+                    ]
+                }
+			]
+		},
+        {
+            "subdomain": "api.example.com",
+            "directories": [
+                {
+                    "directory": "/api",
+                    "subdirectories": [
+                        {
+                            "subdirectory": "/api/v1",
+                            "subdirectories": [
+                                {
+                                    "subdirectory": "/api/v1/login",
+                                    "files": [
+                                        {
+                                            "file": "/api/v1/login/index.php",
+                                            "parameters": [
+                                                {
+                                                    "parameter": "/api/v1/login/index.php?username=admin&password=admin"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+	]
+}

@@ -7,34 +7,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Fucntion to read a file as text
-func ReadFileAsText(path string) (string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-	fi, err := file.Stat()
-	if err != nil {
-		return "", err
-	}
-	data := make([]byte, fi.Size())
-	_, err = file.Read(data)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
-// Function to read a file as yaml
-func ReadFileAsYaml(path string, v interface{}) error {
-	data, err := ReadFileAsText(path)
-	if err != nil {
-		return err
-	}
-	return yaml.Unmarshal([]byte(data), v)
-}
-
 /*
 	This is the content of config file
 
@@ -84,6 +56,34 @@ type Config struct {
 			TargetBased bool   `yaml:"target_based"`
 		} `yaml:"dbs"`
 	} `yaml:"healerdb"`
+}
+
+// Fucntion to read a file as text
+func ReadFileAsText(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	fi, err := file.Stat()
+	if err != nil {
+		return "", err
+	}
+	data := make([]byte, fi.Size())
+	_, err = file.Read(data)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+// Function to read a file as yaml
+func ReadFileAsYaml(path string, v interface{}) error {
+	data, err := ReadFileAsText(path)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal([]byte(data), v)
 }
 
 // Function to read the config file and return a Config type
