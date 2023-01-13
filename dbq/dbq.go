@@ -4,11 +4,15 @@ import (
 	"fmt"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+
 	// log.warningf is used to print the warning messages
 
 	// local config package
 	"healerdb/config"
 	"healerdb/myutils"
+	// a json query package : jsonquery
+	// jsonquery is used to query the json data
 )
 
 // Function Connect: to connect to the database with the given connection url (e.g. mongodb://localhost:27017), return the session and error if any occurs
@@ -248,7 +252,7 @@ func AddTargetToDB(session *mgo.Session, target string) error {
 				}
 				fmt.Println("[+] Added target to database:\t'" + target + "'")
 			} else {
-				fmt.Println("[INFO] Target already exists in database:\t'" + target + "'")
+				fmt.Println("[INFO] Target '" + target + "' already exists in database '" + database.Name + "'")
 			}
 		}
 	}
@@ -282,6 +286,42 @@ func RemoveTargetFromDB(session *mgo.Session, target string) error {
 				fmt.Println("[INFO] Target:\t'" + target + "' does not exist in database:\t'" + database.Name + "'")
 			}
 		}
+	}
+	return nil
+}
+
+// Function AddDomainToDB to add a domain to the target data in the databases, return error if any error occurs
+func AddDomainToDB(session *mgo.Session, target string, domain string) error {
+	/* In the database "enum", add a new document
+	{ "domain": "domain.com" }
+	This data (domain) should be just added to 'enum' database, so we don't need to iterate over the databases in the config
+	*/
+
+	// First check if the domain is already in the database
+	docs, err := GetDocuments(session, "enum", target)
+	if err != nil {
+		return err
+	}
+
+	// convert the docs to a slice of strings using sprintf
+	var domains []string
+	for _, doc := range docs {
+		// convert the doc to a string
+		domain := fmt.Sprintf("%v", doc)
+		// print the domain
+		fmt.Println("[INFO] Domain:\t'" + domain + "'")
+	}
+
+	// If the domain is not in the database, then add it
+	if !myutils.ContainsString(domains, domain) {
+		// Add the domain to the database
+		err = AddDocument(session, "enum", target, bson.M{"domain": domain})
+		if err != nil {
+			return err
+		}
+		fmt.Println("[+] Added domain to database:\t'" + domain + "'")
+	} else {
+		fmt.Println("[INFO] Domain '" + domain + "' already exists in database 'enum'")
 	}
 	return nil
 }
