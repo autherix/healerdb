@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"db/dbquery"
-	"db/myutils"
+	"healerdb/dbquery"
+	"healerdb/myutils"
 )
 
 func main() {
