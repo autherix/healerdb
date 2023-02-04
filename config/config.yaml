@@ -1,6 +1,6 @@
 --- # This is a sample configuration file for the HealerDB service.
 healerdb:
-    connstr: "mongodb://localhost:27017"
+    connstr: "mongodb://mongodb:27017/"
     conncreds: 
         username:
         password:

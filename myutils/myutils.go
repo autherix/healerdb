@@ -1,6 +1,9 @@
 package myutils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"os"
 )
 
@@ -35,4 +38,20 @@ func ContainsString(slice []string, str string) bool {
 		}
 	}
 	return false
+}
+
+// function to create a hash of a string using sha256
+func HashString(str string) string {
+	hash := sha256.New()
+	hash.Write([]byte(str))
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+// function Struct2json to convert a struct to json string
+func Struct2json(v interface{}) (string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

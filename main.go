@@ -2,82 +2,120 @@ package main
 
 import (
 	"fmt"
-	"log"
 
-	"healerdb/config"
-	"healerdb/dbq"
+	"db/dbquery"
+	"db/myutils"
 )
 
 func main() {
-	fmt.Println("--------------------------------------------------")
-	fmt.Println("Hello World")
+	fmt.Println("Hello, World!")
 
-	// Read the config file and get the connection string
-	connString, err := config.GetConnStr()
+	// Create a client to mongoDB server using connstr
+	connstr := "mongodb://localhost:27017"
+	client, err := dbquery.Createclient(connstr)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
-	fmt.Println("Connection String:", connString)
+	// defer to disconnect from mongoDB server
+	defer client.Disconnect(nil)
 
-	// Connect to the database
-	session, err := dbq.Connect(connString)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Check the session to the database is alive or not and ping the database
-	err = session.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Defer to close the session to the database
-	defer session.Close()
-
-	// Drop all the databases
-	// err = dbq.DropAllDatabases(session)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println("All the databases dropped")
+	fmt.Println("Connected to MongoDB!")
 
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
 
-	// Run DBFirstSetup function to create the necessary databases and collections
-	err = dbq.DBFirstSetup(session)
+	// list all the databases in the mongoDB server
+	databases, err := dbquery.Getdatabases(client)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
-	fmt.Println("[+] Database setup complete")
-	// print a seperator
-	fmt.Println("--------------------------------------------------")
-
-	// Add a new target to the database called "test"
-	err = dbq.AddTargetToDB(session, "test")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("[INFO] Finished job adding a new target to the database")
+	fmt.Println(databases)
 
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
 
-	// Add a new target to the database called "test2"
-	err = dbq.AddTargetToDB(session, "test2")
+	// Create a database called 'safe-panel'
+	dbname := "safe-panel"
+	err = dbquery.Createdatabase(client, dbname)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		fmt.Println("Failed to create database")
+		// return
+	} else {
+		fmt.Println("Database created!")
 	}
-	fmt.Println("[INFO] Finished job adding a new target to the database\nNew Target: test2")
-
-	// Add a domain to the database enum, to target "test", domain: "test.com"
-	err = dbq.AddDomainToDB(session, "test", "test.com")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("[INFO] Finished job adding a new domain to the database\nNew Domain: test.com")
 
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
-	fmt.Println("Done")
+
+	// Create a collection called 'users' in the database 'safe-panel'
+	collectionname := "users"
+	err = dbquery.Createcollection(client, dbname, collectionname)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to create collection")
+		// return
+	} else {
+		fmt.Println("Collection created!")
+	}
+
+	// create an index on the field 'email' in the collection 'users' in the database 'safe-panel'
+	indexname := "email"
+	err = dbquery.Adduniqueindex(client, dbname, collectionname, indexname)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to create index")
+		return
+	} else {
+		fmt.Println("Index created!")
+	}
+	// Create an index on the field 'username' in the collection 'users' in the database 'safe-panel'
+	indexname = "username"
+	err = dbquery.Adduniqueindex(client, dbname, collectionname, indexname)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to create index")
+		return
+	} else {
+		fmt.Println("Index created!")
+	}
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
+
+	passwd := "123456"
+	passwd_hash := myutils.HashString(passwd)
+	// Insert a document into the collection 'users' in the database 'safe-panel' using a struct type 'User'
+	type User struct {
+		Username   string `json:"username"`
+		PasswdHash string `json:"passwd_hash"`
+		Email      string `json:"email"`
+	}
+	admin_user := User{
+		Username:   "admin2",
+		PasswdHash: passwd_hash,
+		Email:      "admin2@autherix.com",
+	}
+	// convert to json string
+	user_json, err := myutils.Struct2json(admin_user)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to convert struct to json")
+		return
+	}
+	fmt.Println(user_json)
+	err = dbquery.Insertdocument(client, dbname, collectionname, user_json)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to insert document")
+		// return
+	} else {
+		fmt.Println("Document inserted!")
+	}
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
+
 }
