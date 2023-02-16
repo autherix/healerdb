@@ -4,7 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"net/url"
 	"os"
+	// import local package mytype
 )
 
 // Function to get the current working directory, return the path as string and error
@@ -54,4 +56,18 @@ func Struct2json(v interface{}) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+// function to get a raw http/https url as string and return the domain as string(e.g. https://www.google.com -> google.com OR http://sub1.sub3.google.com/dir1/dir2 -> google.com OR http://spchost:8080 -> spchost OR https://sub2.sub3.google.com:8080/dir1/dir2/file.name.txt?query=1 -> google.com)
+func GetDomain(urlstr string) (string, error) {
+	// use net/url package to parse the url
+	u, err := url.Parse(urlstr)
+	if err != nil {
+		return "", err
+	}
+	// get the host
+	host := u.Host
+
+	// return the host
+	return host, nil
 }

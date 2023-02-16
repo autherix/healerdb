@@ -12,7 +12,7 @@ func main() {
 
 	// Create a client to mongoDB server using connstr
 	connstr := "mongodb://localhost:27017"
-	client, err := dbquery.Createclient(connstr)
+	client, err := dbquery.CreateClient(connstr)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -26,7 +26,7 @@ func main() {
 	fmt.Println("--------------------------------------------------")
 
 	// list all the databases in the mongoDB server
-	databases, err := dbquery.Getdatabases(client)
+	databases, err := dbquery.GetDatabases(client)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -38,7 +38,7 @@ func main() {
 
 	// Create a database called 'safe-panel'
 	dbname := "safe-panel"
-	err = dbquery.Createdatabase(client, dbname)
+	err = dbquery.CreateDatabase(client, dbname)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Failed to create database")
@@ -52,7 +52,7 @@ func main() {
 
 	// Create a collection called 'users' in the database 'safe-panel'
 	collectionname := "users"
-	err = dbquery.Createcollection(client, dbname, collectionname)
+	err = dbquery.CreateCollection(client, dbname, collectionname)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Failed to create collection")
@@ -63,7 +63,7 @@ func main() {
 
 	// create an index on the field 'email' in the collection 'users' in the database 'safe-panel'
 	indexname := "email"
-	err = dbquery.Adduniqueindex(client, dbname, collectionname, indexname)
+	err = dbquery.AddUniqueIndex(client, dbname, collectionname, indexname)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Failed to create index")
@@ -73,7 +73,7 @@ func main() {
 	}
 	// Create an index on the field 'username' in the collection 'users' in the database 'safe-panel'
 	indexname = "username"
-	err = dbquery.Adduniqueindex(client, dbname, collectionname, indexname)
+	err = dbquery.AddUniqueIndex(client, dbname, collectionname, indexname)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Failed to create index")
@@ -87,16 +87,16 @@ func main() {
 
 	passwd := "123456"
 	passwd_hash := myutils.HashString(passwd)
-	// Insert a document into the collection 'users' in the database 'safe-panel' using a struct type 'User'
+	// Insert a document in	to the collection 'users' in the database 'safe-panel' using a struct type 'User'
 	type User struct {
 		Username   string `json:"username"`
 		PasswdHash string `json:"passwd_hash"`
 		Email      string `json:"email"`
 	}
 	admin_user := User{
-		Username:   "admin2",
+		Username:   "admin",
 		PasswdHash: passwd_hash,
-		Email:      "admin2@autherix.com",
+		Email:      "admin@autherix.com",
 	}
 	// convert to json string
 	user_json, err := myutils.Struct2json(admin_user)
@@ -106,7 +106,7 @@ func main() {
 		return
 	}
 	fmt.Println(user_json)
-	err = dbquery.Insertdocument(client, dbname, collectionname, user_json)
+	err = dbquery.InsertDocument(client, dbname, collectionname, user_json)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Failed to insert document")
@@ -118,4 +118,55 @@ func main() {
 	// print a seperator
 	fmt.Println("--------------------------------------------------")
 
+	// Create a target called 'surf' in database 'enum'
+	dbname = "enum"
+	collectionname = "surf"
+	err = dbquery.CreateDatabase(client, dbname)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to create database")
+		// return
+	} else {
+		fmt.Println("Database created!")
+	}
+	err = dbquery.CreateCollection(client, dbname, collectionname)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to create collection")
+		// return
+	} else {
+		fmt.Println("Collection created!")
+	}
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
+
+	// Add a domain to the target 'surf' in database 'enum'
+	domain := "test6.com"
+	subdomain := "sub.test6.com"
+	// Use AddDomain function to add a domain to the target 'surf' in database 'enum'
+	err = dbquery.AddDomain(client, dbname, collectionname, domain)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to add domain")
+		// return
+	} else {
+		fmt.Println("Domain added!")
+	}
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
+
+	// Check if the subdomain subdomain is already present in the target 'surf' in database 'enum'
+	subexists, err := dbquery.CheckSubdomain(client, dbname, collectionname, domain, subdomain)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Failed to check subdomain")
+		// return
+	} else {
+		fmt.Println("Subdomain exists:", subexists)
+	}
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
 }
