@@ -11,7 +11,7 @@ func main() {
 	fmt.Println("Hello, World!")
 
 	// Create a client to mongoDB server using connstr
-	connstr := "mongodb://localhost:27017"
+	connstr := "mongodb://healerdb:hamidpapi@localhost:27017"
 	client, err := dbquery.CreateClient(connstr)
 	if err != nil {
 		fmt.Println(err)

@@ -493,6 +493,11 @@ func CheckSubdomain(client *mongo.Client, database string, collection string, do
 		return false, nil
 	}
 
+	// if subdomainsList is an empty array, the subdomain doesn't exist
+	if subdomainsList.String() == "[]" {
+		return false, nil
+	}
+
 	// print a seperator
 	fmt.Println("--------------------------------------")
 
@@ -518,3 +523,6 @@ func AddSubdomain(client *mongo.Client, database string, collection string, doma
 	if exists {
 		return fmt.Errorf("[-] Subdomain already exists")
 	}
+
+	return nil
+}
