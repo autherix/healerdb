@@ -7,6 +7,14 @@ import (
 	"healerdb/myutils"
 )
 
+//////////////////////////////////////////
+//////////////////////////////////////////
+////////                          ////////
+////////  		Initialize        ////////
+////////                          ////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+
 func main() {
 	fmt.Println("Hello, World!")
 
@@ -158,7 +166,7 @@ func main() {
 	fmt.Println("--------------------------------------------------")
 
 	// Check if the subdomain subdomain is already present in the target 'surf' in database 'enum'
-	subexists, err := dbquery.CheckSubdomain(client, dbname, collectionname, domain, subdomain)
+	_, subexists, err := dbquery.CheckSubdomain(client, dbname, collectionname, domain, subdomain)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Failed to check subdomain")
@@ -166,6 +174,9 @@ func main() {
 	} else {
 		fmt.Println("Subdomain exists:", subexists)
 	}
+
+	// print a seperator
+	fmt.Println("--------------------------------------------------")
 
 	// print a seperator
 	fmt.Println("--------------------------------------------------")

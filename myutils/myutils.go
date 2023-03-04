@@ -9,6 +9,18 @@ import (
 	// import local package mytype
 )
 
+// remember this, it's program partition comment:
+
+// program partition comment with title 'Database - main'
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+////////                                 ////////
+////////  		Database - main          ////////
+////////                                 ////////
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+
 // Function to get the current working directory, return the path as string and error
 func GetCwd() (string, error) {
 	cwd, err := os.Getwd()

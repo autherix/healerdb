@@ -414,7 +414,7 @@ func QueryDocuments(client *mongo.Client, database string, collection string, qu
 
 	// Convert the documents to json
 	var documents []bson.M
-	err = cursor.All(nil, &documents)
+	err = cursor.All(context.TODO(), &documents)
 	if err != nil {
 		return "", fmt.Errorf("[-] Error converting documents to json: %v", err)
 	}
@@ -476,12 +476,54 @@ func AddDomain(client *mongo.Client, database string, target string, domain stri
 	return nil
 }
 
-// function AddSubdomain to add a subdomain to the provided database name, coll name, inside the document with the provided domain name, returns an error, create the document with the provided domain name if it doesn't exist
-func CheckSubdomain(client *mongo.Client, database string, collection string, domain string, subdomain string) (bool, error) {
+// function UpdateDocument to update a document in the database, returns an error -> get client, db, collection name, document id, json string as parameters
+func UpdateOneDocument(client *mongo.Client, database string, collection string, id string, jsonstring string) error {
+	filter := bson.M{"_id": id}
+	fmt.Println("[+] Updating document with id: " + "\"" + id + "\"")
+	// Query document with the provided id, use QueryDocuments() to query the database
+	jsondocuments, err := QueryDocuments(client, database, collection, filter)
+	if err != nil {
+		return fmt.Errorf("[-] Error updating document: %v", err)
+	}
+
+	// Check if the json string is empty, if it is return an error
+	if jsondocuments == "null" {
+		return fmt.Errorf("[-] Document doesn't exist")
+	}
+	if jsondocuments == "" {
+		return fmt.Errorf("[-] Document doesn't exist")
+	}
+	if jsondocuments == "[]" {
+		return fmt.Errorf("[-] Document doesn't exist")
+	}
+	if jsondocuments == "{}" {
+		return fmt.Errorf("[-] Document doesn't exist")
+	}
+
+	// Convert the raw json to bson
+	var bsondocument bson.M
+	err = bson.UnmarshalExtJSON([]byte(jsonstring), true, &bsondocument)
+	if err != nil {
+		return fmt.Errorf("[-] Error converting json to bson: %v", err)
+	}
+
+	// Update the document with the provided id, use UpdateOne() to update a document
+	update := bson.M{"$set": bsondocument}
+	result, err := client.Database(database).Collection(collection).UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return fmt.Errorf("[-] Error updating document: %v", err)
+	}
+	fmt.Printf("[+] Updated document successfully: %v", result.ModifiedCount)
+
+	return nil
+}
+
+// function AddSubdomain to add a subdomain to the provided database name, coll name, inside the document with the provided domain name, returns an error, create the document with the provided domain name if it doesn't exist... also return the jsondocuments which is the result of the query
+func CheckSubdomain(client *mongo.Client, database string, collection string, domain string, subdomain string) (string, bool, error) {
 	// Get the document with the domain name, use QueryDocuments() to query the database
 	jsondocuments, err := QueryDocuments(client, database, collection, bson.M{"domain": domain})
 	if err != nil {
-		return false, fmt.Errorf("[-] Error checking subdomain: %v", err)
+		return "", false, fmt.Errorf("[-] Error checking subdomain: %v", err)
 	}
 
 	// iterate over jsondocuments.#.subdomains.#.subdomain and check if the subdomain already exists
@@ -490,12 +532,12 @@ func CheckSubdomain(client *mongo.Client, database string, collection string, do
 
 	// if subdomainsList is empty, the subdomain doesn't exist
 	if subdomainsList.String() == "" {
-		return false, nil
+		return jsondocuments, false, nil
 	}
 
 	// if subdomainsList is an empty array, the subdomain doesn't exist
 	if subdomainsList.String() == "[]" {
-		return false, nil
+		return jsondocuments, false, nil
 	}
 
 	// print a seperator
@@ -506,17 +548,17 @@ func CheckSubdomain(client *mongo.Client, database string, collection string, do
 	for _, subdomainAddr := range subdomainAddrList {
 		fmt.Println(subdomainAddr.String())
 		if subdomainAddr.String() == subdomain {
-			return true, nil
+			return jsondocuments, true, nil
 		}
 	}
 
-	return false, nil
+	return jsondocuments, false, nil
 }
 
-// function AddSubdomain to add a subdomain to the provided database name, coll name, inside the document with the provided domain name, returns an error, create the document with the provided domain name if it doesn't exist
-func AddSubdomain(client *mongo.Client, database string, collection string, domain string, subdomain string) error {
+// function AddNewSubdomain to add new subdomain to the provided database name, coll name, inside the document with the provided domain name, returns an error, create the document with the provided domain name if it doesn't exist
+func AddNewSubdomain(client *mongo.Client, database string, collection string, domain string, subdomain string) error {
 	// Check if the subdomain already exists, use CheckSubdomain() to check if a subdomain exists
-	exists, err := CheckSubdomain(client, database, collection, domain, subdomain)
+	jsondocuments, exists, err := CheckSubdomain(client, database, collection, domain, subdomain)
 	if err != nil {
 		return fmt.Errorf("[-] Error checking subdomain: %v", err)
 	}
@@ -524,5 +566,11 @@ func AddSubdomain(client *mongo.Client, database string, collection string, doma
 		return fmt.Errorf("[-] Subdomain already exists")
 	}
 
-	return nil
-}
+	// Recreate the jsondocuments string to add the new subdomain using sjson 
+	jsondocuments, err = sjson.Set(jsondocuments, "#.subdomains.-1", bson.M{"subdomain": subdomain})
+	if err != nil {
+		return fmt.Errorf("[-] Error adding subdomain: %v", err)
+	}
+
+	// print
+	fmt.Println(jsondocuments)
