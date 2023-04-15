@@ -556,21 +556,3 @@ func CheckSubdomain(client *mongo.Client, database string, collection string, do
 }
 
 // function AddNewSubdomain to add new subdomain to the provided database name, coll name, inside the document with the provided domain name, returns an error, create the document with the provided domain name if it doesn't exist
-func AddNewSubdomain(client *mongo.Client, database string, collection string, domain string, subdomain string) error {
-	// Check if the subdomain already exists, use CheckSubdomain() to check if a subdomain exists
-	jsondocuments, exists, err := CheckSubdomain(client, database, collection, domain, subdomain)
-	if err != nil {
-		return fmt.Errorf("[-] Error checking subdomain: %v", err)
-	}
-	if exists {
-		return fmt.Errorf("[-] Subdomain already exists")
-	}
-
-	// Recreate the jsondocuments string to add the new subdomain using sjson 
-	jsondocuments, err = sjson.Set(jsondocuments, "#.subdomains.-1", bson.M{"subdomain": subdomain})
-	if err != nil {
-		return fmt.Errorf("[-] Error adding subdomain: %v", err)
-	}
-
-	// print
-	fmt.Println(jsondocuments)
